@@ -1,0 +1,17 @@
+server:
+  port: 8080
+
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: user
+    password: pass
+
+app:
+  rabbit:
+    exchange: thesis.exchange
+    queue: thesis.anteproyecto.queue
+    routing-key: anteproyecto.created
+
+management.endpoints.web.exposure.include: health,info

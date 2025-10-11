@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>co.edu.unicauca</groupId>
-    <artifactId>degree-project-microservices-communication</artifactId>
+    <artifactId>notification</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>degree-project-microservices-communication</name>
     <description>degree-project-microservices-communication</description>
