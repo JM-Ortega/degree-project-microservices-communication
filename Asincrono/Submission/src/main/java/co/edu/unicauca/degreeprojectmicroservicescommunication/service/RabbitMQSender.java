@@ -13,8 +13,6 @@ import org.springframework.stereotype.Service;
  *
  * <p>Actualmente se utiliza para enviar los datos de los anteproyectos creados,
  * en forma de un DTO.</p>
- *
- * @author Laura Molano
  */
 @Service
 public class RabbitMQSender {
