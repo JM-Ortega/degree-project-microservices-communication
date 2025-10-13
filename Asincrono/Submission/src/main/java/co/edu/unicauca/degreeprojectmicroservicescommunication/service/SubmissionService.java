@@ -7,8 +7,13 @@ import co.edu.unicauca.degreeprojectmicroservicescommunication.entity.Docente;
 import co.edu.unicauca.degreeprojectmicroservicescommunication.entity.Estudiante;
 import co.edu.unicauca.degreeprojectmicroservicescommunication.entity.TrabajoDeGrado;
 import co.edu.unicauca.degreeprojectmicroservicescommunication.repository.AnteproyectoRepository;
+import co.edu.unicauca.degreeprojectmicroservicescommunication.repository.DocenteRepository;
+import co.edu.unicauca.degreeprojectmicroservicescommunication.repository.EstudianteRepository;
+import co.edu.unicauca.degreeprojectmicroservicescommunication.repository.TrabajoDeGradoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,6 +35,15 @@ public class SubmissionService {
     /** Repositorio para la persistencia de entidades {@link Anteproyecto}. */
     @Autowired
     private AnteproyectoRepository anteproyectoRepository;
+
+    @Autowired
+    private EstudianteRepository estudianteRepository;
+
+    @Autowired
+    private DocenteRepository docenteRepository;
+
+    @Autowired
+    private TrabajoDeGradoRepository trabajoRepository;
 
     /** Componente responsable de enviar mensajes a RabbitMQ. */
     @Autowired
@@ -62,24 +76,58 @@ public class SubmissionService {
 
         List<Estudiante> estudiantes = request.getEstudiantes()
                 .stream()
-                .map(e -> new Estudiante(e.getNombre(), e.getCorreo(), e.getCodigo()))
+                .map(dto -> estudianteRepository.findByCorreo(dto.getCorreo())
+                        .orElseGet(() -> new Estudiante(dto.getNombre(), dto.getCorreo(), dto.getCodigo())))
                 .collect(Collectors.toList());
+
+        // Validación: cada estudiante solo puede tener 1 trabajo de grado
+        for (Estudiante e : estudiantes) {
+            List<TrabajoDeGrado> trabajosExistentes = estudianteRepository.findTrabajosByEstudianteCorreo(e.getCorreo());
+            if (!trabajosExistentes.isEmpty()) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "El estudiante " + e.getNombre() + " ya está asociado a un trabajo de grado."
+                );
+            }
+        }
 
         trabajo.setEstudiantes(estudiantes);
 
-        Docente director = new Docente(
-                request.getDirector().getNombre(),
-                request.getDirector().getCorreo(),
-                request.getDirector().getDepartamento()
-        );
+        Docente director = docenteRepository.findByCorreo(request.getDirector().getCorreo())
+                .orElseGet(() -> new Docente(
+                        request.getDirector().getNombre(),
+                        request.getDirector().getCorreo(),
+                        request.getDirector().getDepartamento()
+                ));
+
+        // Validación: un profesor no puede tener más de 3 trabajos de grado
+        Long trabajosDirector = trabajoRepository.countTrabajosByProfesor(director.getCorreo());
+        if (trabajosDirector >= 3) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "El director " + director.getNombre() + " ya tiene 3 trabajos de grado."
+            );
+        }
+
         trabajo.setDirector(director);
 
+        Docente codirector = null;
         if (request.getCodirector() != null) {
-            Docente codirector = new Docente(
-                    request.getCodirector().getNombre(),
-                    request.getCodirector().getCorreo(),
-                    request.getCodirector().getDepartamento()
-            );
+            codirector = docenteRepository.findByCorreo(request.getCodirector().getCorreo())
+                    .orElseGet(() -> new Docente(
+                            request.getCodirector().getNombre(),
+                            request.getCodirector().getCorreo(),
+                            request.getCodirector().getDepartamento()
+                    ));
+
+            Long trabajosCodirector = trabajoRepository.countTrabajosByProfesor(codirector.getCorreo());
+            if (trabajosCodirector >= 3) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "El codirector " + codirector.getNombre() + " ya tiene 3 trabajos de grado."
+                );
+            }
+
             trabajo.setCodirector(codirector);
         }
 

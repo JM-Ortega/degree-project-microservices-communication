@@ -9,8 +9,10 @@ public class Docente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String nombre;
+    @Column(unique = true)
     private String correo;
+
+    private String nombre;
     private String departamento;
 
     public Docente() {}
