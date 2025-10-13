@@ -10,6 +10,7 @@ public class JefeDepto {
     private String fullName;
     private String email;
     private String password;
+    @Enumerated(EnumType.STRING)
     private Departamento depto;
 
     public Departamento getDepto() {
