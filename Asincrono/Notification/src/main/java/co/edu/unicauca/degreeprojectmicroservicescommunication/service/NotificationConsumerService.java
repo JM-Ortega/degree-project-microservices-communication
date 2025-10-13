@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Servicio encargado de consumir mensajes desde RabbitMQ relacionados con anteproyectos de grado.
@@ -46,47 +48,68 @@ public class NotificationConsumerService {
      */
     @RabbitListener(queues = "${app.rabbit.queue}")
     public void receiveMessage(AnteproyectoRequest anteproyectoRequest) {
+        if (anteproyectoRequest == null) {
+            System.out.println("El mensaje recibido es nulo");
+            return;
+        }
+
         String de = "Servicio de notificaciones";
-        List<String> para = new ArrayList<String>();
+        List<String> para = new ArrayList<>();
         String asunto = "Nuevo anteproyecto de grado";
-        String body = "Apreciado usuario. \n" +
-                "Esta notificación es para informarle que se registró un nuevo anteproyecto de grado. \n" +
-                "Titulo del anteproyecto: " + anteproyectoRequest.getTitulo() + "\n" +
+
+        String body = "Apreciado usuario,\n" +
+                "Se registró un nuevo anteproyecto de grado.\n" +
+                "Título: " + anteproyectoRequest.getTitulo() + "\n" +
                 "Descripción: " + anteproyectoRequest.getDescripcion() + "\n";
 
-        para.add(anteproyectoRequest.getEstudiante1());
-
-        if(anteproyectoRequest.getEstudiante2()!=null && !anteproyectoRequest.getEstudiante2().isEmpty()){
-            para.add(anteproyectoRequest.getEstudiante2());
-            body = body + "Autor(es): " + anteproyectoRequest.getEstudiante1() + " y " + anteproyectoRequest.getEstudiante2() + "\n";
-        }else{
-            body = body + "Autor(es): " + anteproyectoRequest.getEstudiante1() + "\n";
+        if (anteproyectoRequest.getEstudiantes() != null && !anteproyectoRequest.getEstudiantes().isEmpty()) {
+            body += "Autor(es): " + String.join(", ", anteproyectoRequest.getEstudiantes()) + "\n";
         }
 
-        String depto = anteproyectoRequest.getDepartamento().toLowerCase();
-        if(depto.contains("sistemas")){
-            Departamento EnumDepto = Departamento.SISTEMAS;
-            jefeDeptoRepository.findByDepto(EnumDepto).ifPresent(jefeDepto -> para.add(jefeDepto.getEmail()));
-        }else if(depto.contains("electronica")){
-            Departamento EnumDepto = Departamento.ELECTRONICA_INSTRUMENTACION_Y_CONTROL;
-            jefeDeptoRepository.findByDepto(EnumDepto).ifPresent(jefeDepto -> para.add(jefeDepto.getEmail()));
-        }else if(depto.contains("telematica")){
-            Departamento EnumDepto = Departamento.TELEMATICA;
-            jefeDeptoRepository.findByDepto(EnumDepto).ifPresent(jefeDepto -> para.add(jefeDepto.getEmail()));
-        }else if(depto.contains("telecomunicaciones")){
-            Departamento EnumDepto = Departamento.TELECOMUNICACIONES;
-            jefeDeptoRepository.findByDepto(EnumDepto).ifPresent(jefeDepto -> para.add(jefeDepto.getEmail()));
-        }else {
-            System.out.println("No se reconoció el departamento");
+        if (anteproyectoRequest.getDirector() != null && !anteproyectoRequest.getDirector().isEmpty()) {
+            body += "Director: " + anteproyectoRequest.getDirector() + "\n";
         }
 
-        if(anteproyectoRequest.getDirector()!=null && !anteproyectoRequest.getDirector().isEmpty() &&
-           anteproyectoRequest.getCodirector()!=null && !anteproyectoRequest.getCodirector().isEmpty()){
-            para.add(anteproyectoRequest.getDirector());
-            para.add(anteproyectoRequest.getCodirector());
+        if (anteproyectoRequest.getCodirector() != null && !anteproyectoRequest.getCodirector().isEmpty()) {
+            body += "Codirector: " + anteproyectoRequest.getCodirector() + "\n";
         }
 
-        EmailMessage message = new EmailMessage(asunto, body, de , para);
+        if (anteproyectoRequest.getDepartamentos() != null && !anteproyectoRequest.getDepartamentos().isEmpty()) {
+            Set<Departamento> departamentosReconocidos = new HashSet<>();
+
+            for (String depto : anteproyectoRequest.getDepartamentos()) {
+                String d = depto.toLowerCase();
+                Departamento enumDepto = null;
+
+                if (d.contains("sistemas")) {
+                    enumDepto = Departamento.SISTEMAS;
+                } else if (d.contains("electrónica") || d.contains("electronica")) {
+                    enumDepto = Departamento.ELECTRONICA_INSTRUMENTACION_Y_CONTROL;
+                } else if (d.contains("telemática") || d.contains("telematica")) {
+                    enumDepto = Departamento.TELEMATICA;
+                } else if (d.contains("telecomunicaciones")) {
+                    enumDepto = Departamento.TELECOMUNICACIONES;
+                }
+
+                if (enumDepto != null) {
+                    departamentosReconocidos.add(enumDepto);
+                } else {
+                    System.out.println("No se reconoció el departamento: " + depto);
+                }
+            }
+
+            for (Departamento depto : departamentosReconocidos) {
+                jefeDeptoRepository.findByDepto(depto)
+                        .ifPresent(jefe -> para.add(jefe.getEmail()));
+            }
+        }
+
+
+        if (anteproyectoRequest.getCorreos() != null && !anteproyectoRequest.getCorreos().isEmpty()) {
+            para.addAll(anteproyectoRequest.getCorreos());
+        }
+
+        EmailMessage message = new EmailMessage(asunto, body, de, para);
         notificationService.sendEmail(message);
     }
 }

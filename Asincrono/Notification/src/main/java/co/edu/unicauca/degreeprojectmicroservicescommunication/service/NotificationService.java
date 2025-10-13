@@ -21,11 +21,11 @@ public class NotificationService implements INotificationService {
      */
     @Override
     public void sendEmail(EmailMessage message) {
-        logger.info("----- SIMULACION DE ENVIO DE EMAIL -----\n" +
+        logger.info("\n----- SIMULACION DE ENVÍO DE EMAIL -----\n" +
                 "De: " + message.de + "\n" +
                 "Para: " + String.join(", ", message.para) + "\n" +
                 "Asunto: " + message.asunto + "\n" +
                 "Body:\n" + message.body + "\n" +
-                "----- END SIMULATED EMAIL -----\n");
+                "----- FIN DE LA SIMULACIÓN -----\n");
     }
 }

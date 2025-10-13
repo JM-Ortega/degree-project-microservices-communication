@@ -1,21 +1,26 @@
 package co.edu.unicauca.degreeprojectmicroservicescommunication.infra.dto;
 
+import java.util.Date;
+import java.util.List;
+
 public class AnteproyectoRequest {
     private String titulo;
     private String descripcion;
-    private String estudiante1;
-    private String estudiante2;
+    private Date fechaCreacion;
+    private List<String> estudiantes;
     private String director;
     private String codirector;
-    private String departamento;
+    private List<String> correos;
+    private List<String> departamentos;
 
-    public AnteproyectoRequest(String codirector, String departamento, String descripcion, String director, String estudiante1, String estudiante2, String titulo) {
+    public AnteproyectoRequest(String codirector, List<String> correos, List<String> departamentos, String descripcion, String director, List<String> estudiantes, Date fechaCreacion, String titulo) {
         this.codirector = codirector;
-        this.departamento = departamento;
+        this.correos = correos;
+        this.departamentos = departamentos;
         this.descripcion = descripcion;
         this.director = director;
-        this.estudiante1 = estudiante1;
-        this.estudiante2 = estudiante2;
+        this.estudiantes = estudiantes;
+        this.fechaCreacion = fechaCreacion;
         this.titulo = titulo;
     }
 
@@ -27,13 +32,21 @@ public class AnteproyectoRequest {
         this.codirector = codirector;
     }
 
-    public String getDepartamento() {
-        return departamento;
-    }
+    public List<String> getCorreos() {return correos;}
 
-    public void setDepartamento(String departamento) {
-        this.departamento = departamento;
-    }
+    public void setCorreos(List<String> correos) {this.correos = correos;}
+
+    public List<String> getDepartamentos() {return departamentos;}
+
+    public void setDepartamentos(List<String> departamentos) {this.departamentos = departamentos;}
+
+    public List<String> getEstudiantes() {return estudiantes;}
+
+    public void setEstudiantes(List<String> estudiantes) {this.estudiantes = estudiantes;}
+
+    public Date getFechaCreacion() {return fechaCreacion;}
+
+    public void setFechaCreacion(Date fechaCreacion) {this.fechaCreacion = fechaCreacion;}
 
     public String getDescripcion() {
         return descripcion;
@@ -49,22 +62,6 @@ public class AnteproyectoRequest {
 
     public void setDirector(String director) {
         this.director = director;
-    }
-
-    public String getEstudiante1() {
-        return estudiante1;
-    }
-
-    public void setEstudiante1(String estudiante1) {
-        this.estudiante1 = estudiante1;
-    }
-
-    public String getEstudiante2() {
-        return estudiante2;
-    }
-
-    public void setEstudiante2(String estudiante2) {
-        this.estudiante2 = estudiante2;
     }
 
     public String getTitulo() {
