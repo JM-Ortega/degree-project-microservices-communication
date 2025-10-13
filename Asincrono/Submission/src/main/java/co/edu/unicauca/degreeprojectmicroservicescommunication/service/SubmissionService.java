@@ -21,18 +21,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Servicio encargado de manejar la lógica de negocio relacionada con los anteproyectos.
+ * Servicio encargado de gestionar la creación y validación de anteproyectos de grado.
  *
- * <p>Esta clase se encarga de crear y persistir anteproyectos en la base de datos,
- * así como de enviar los datos correspondientes a través de RabbitMQ para su procesamiento
- * por otros microservicios.</p>
+ * <p>Responsabilidades principales:
+ * <ul>
+ *   <li>Crear y persistir un {@link Anteproyecto} junto con su {@link TrabajoDeGrado} asociado.</li>
+ *   <li>Evitar duplicados de {@link Estudiante} y {@link Docente} basándose en el correo electrónico.</li>
+ *   <li>Validar que un estudiante no tenga más de un trabajo de grado.</li>
+ *   <li>Validar que un docente no tenga más de 3 trabajos de grado asociados.</li>
+ *   <li>Preparar y enviar un mensaje a RabbitMQ con la información del anteproyecto para notificaciones.</li>
+ * </ul>
+ * </p>
  *
- * <p>El método principal {@link #crearAnteproyecto(AnteproyectoRequest)} realiza el
- * mapeo entre las entidades del dominio y el mensaje DTO antes de enviarlo.</p>
+ * <p>Este servicio se utiliza principalmente por {@link co.edu.unicauca.degreeprojectmicroservicescommunication.controller.SubmissionController}.</p>
  */
 @Service
 public class SubmissionService {
-    /** Repositorio para la persistencia de entidades {@link Anteproyecto}. */
     @Autowired
     private AnteproyectoRepository anteproyectoRepository;
 
@@ -45,26 +49,30 @@ public class SubmissionService {
     @Autowired
     private TrabajoDeGradoRepository trabajoRepository;
 
-    /** Componente responsable de enviar mensajes a RabbitMQ. */
     @Autowired
     private RabbitMQSender rabbitMQSender;
 
     /**
-     * Crea un nuevo anteproyecto a partir de los datos proporcionados,
-     * lo guarda en la base de datos y envía un mensaje con su información
-     * a través de RabbitMQ.
+     * Crea un anteproyecto de grado a partir de la información recibida en {@link AnteproyectoRequest}.
      *
-     * <p>Durante el proceso:
-     * <ul>
-     *   <li>Se construye la entidad {@link Anteproyecto} con su respectivo {@link TrabajoDeGrado}.</li>
-     *   <li>Se mapean los estudiantes, el director y opcionalmente el codirector.</li>
-     *   <li>Se guarda el anteproyecto en el repositorio.</li>
-     *   <li>Se crea y envía un objeto {@link AnteproyectoMessage} al exchange configurado en RabbitMQ.</li>
-     * </ul>
+     * <p>Flujo de la operación:
+     * <ol>
+     *   <li>Se construye el {@link Anteproyecto} y {@link TrabajoDeGrado} a partir de la petición.</li>
+     *   <li>Se buscan estudiantes y docentes existentes por correo para evitar duplicados; si no existen, se crean nuevos registros.</li>
+     *   <li>Se valida que ningún estudiante tenga ya un trabajo de grado.</li>
+     *   <li>Se valida que los docentes (director y codirector) no tengan más de 3 trabajos asociados.</li>
+     *   <li>Se persiste el anteproyecto y el trabajo de grado en la base de datos.</li>
+     *   <li>Se construye un {@link AnteproyectoMessage} con información relevante (nombres, correos y departamentos) y se envía a RabbitMQ.</li>
+     * </ol>
      * </p>
      *
-     * @param request objeto con los datos necesarios para crear el anteproyecto.
-     * @return el objeto {@link Anteproyecto} guardado en la base de datos.
+     * @param request DTO con la información necesaria para crear el anteproyecto
+     * @return {@link Anteproyecto} persistido en la base de datos
+     * @throws ResponseStatusException si:
+     * <ul>
+     *   <li>Algún estudiante ya tiene un trabajo de grado.</li>
+     *   <li>Algún docente tiene 3 o más trabajos de grado asociados.</li>
+     * </ul>
      */
     public Anteproyecto crearAnteproyecto(AnteproyectoRequest request) {
         Anteproyecto anteproyecto = new Anteproyecto();
