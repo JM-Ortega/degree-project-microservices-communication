@@ -6,7 +6,7 @@ spring:
     name: submission-service
 
   datasource:
-    url: jdbc:h2:mem:submissiondb        # Base de datos en memoria (se borra al cerrar la app)
+    url: jdbc:h2:mem:submissiondb        # Base de datos en memoria
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -14,15 +14,15 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: update                   # Crea/actualiza tablas según tus entidades
-    show-sql: true                       # Muestra las consultas en consola
+      ddl-auto: update
+    show-sql: true
     properties:
       hibernate:
-        format_sql: true                 # Formatea el SQL mostrado para mejor lectura
+        format_sql: true
 
   h2:
     console:
-      enabled: true                      # Activa la consola web de H2
+      enabled: true
       path: /h2-console                  # URL: http://localhost:8081/h2-console
 
   rabbitmq:
@@ -30,13 +30,13 @@ spring:
     port: 5672
     username: appuser
     password: apppass
-    virtual-host: /                      # Asegura que use el vhost por defecto
+    virtual-host: /
 
   main:
     allow-bean-definition-overriding: true
 
 app:
   rabbit:
-    exchange: thesis.exchange            # Nombre exacto del exchange (debe coincidir con tu config)
+    exchange: thesis.exchange
     queue: thesis.anteproyecto.queue     # Nombre de la cola
-    routing-key: anteproyecto.created    # Routing key para el binding
+    routing-key: anteproyecto.createds
