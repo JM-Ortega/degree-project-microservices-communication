@@ -10,6 +10,7 @@ import co.edu.unicauca.degreeprojectmicroservicescommunication.repository.Antepr
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,7 +43,7 @@ public class SubmissionService {
      * <p>Durante el proceso:
      * <ul>
      *   <li>Se construye la entidad {@link Anteproyecto} con su respectivo {@link TrabajoDeGrado}.</li>
-     *   <li>Se mapean los estudiantes, el director y (opcionalmente) el codirector.</li>
+     *   <li>Se mapean los estudiantes, el director y opcionalmente el codirector.</li>
      *   <li>Se guarda el anteproyecto en el repositorio.</li>
      *   <li>Se crea y envía un objeto {@link AnteproyectoMessage} al exchange configurado en RabbitMQ.</li>
      * </ul>
@@ -87,6 +88,22 @@ public class SubmissionService {
 
         Anteproyecto saved = anteproyectoRepository.save(anteproyecto);
 
+        List<String> correos = new ArrayList<>();
+        correos.addAll(saved.getTrabajoDeGrado().getEstudiantes()
+                .stream()
+                .map(Estudiante::getCorreo)
+                .toList());
+        correos.add(saved.getTrabajoDeGrado().getDirector().getCorreo());
+        if (saved.getTrabajoDeGrado().getCodirector() != null) {
+            correos.add(saved.getTrabajoDeGrado().getCodirector().getCorreo());
+        }
+
+        List<String> departamentos = new ArrayList<>();
+        departamentos.add(saved.getTrabajoDeGrado().getDirector().getDepartamento());
+        if (saved.getTrabajoDeGrado().getCodirector() != null) {
+            departamentos.add(saved.getTrabajoDeGrado().getCodirector().getDepartamento());
+        }
+
         AnteproyectoMessage message = new AnteproyectoMessage(
                 saved.getTitulo(),
                 saved.getDescripcion(),
@@ -99,7 +116,9 @@ public class SubmissionService {
                 saved.getTrabajoDeGrado().getDirector().getDepartamento(),
                 saved.getTrabajoDeGrado().getCodirector() != null
                         ? saved.getTrabajoDeGrado().getCodirector().getNombre()
-                        : null
+                        : null,
+                correos,
+                departamentos
         );
 
         rabbitMQSender.sendAnteproyecto(message);

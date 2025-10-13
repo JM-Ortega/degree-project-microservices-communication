@@ -9,21 +9,23 @@ public class AnteproyectoMessage {
     private Date fechaCreacion;
     private List<String> estudiantes;
     private String director;
-    private String departamento;
     private String codirector;
+    private List<String> correos;
+    private List<String> departamentos;
 
     public AnteproyectoMessage() {}
 
     public AnteproyectoMessage(String titulo, String descripcion, Date fechaCreacion,
                                List<String> estudiantes, String director, String departamento,
-                               String codirector) {
+                               String codirector, List<String> correos, List<String> departamentos) {
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.fechaCreacion = fechaCreacion;
         this.estudiantes = estudiantes;
         this.director = director;
-        this.departamento = departamento;
         this.codirector = codirector;
+        this.correos = correos;
+        this.departamentos = departamentos;
     }
 
     public String getTitulo() {
@@ -66,19 +68,27 @@ public class AnteproyectoMessage {
         this.director = director;
     }
 
-    public String getDepartamento() {
-        return departamento;
-    }
-
-    public void setDepartamento(String departamento) {
-        this.departamento = departamento;
-    }
-
     public String getCodirector() {
         return codirector;
     }
 
     public void setCodirector(String codirector) {
         this.codirector = codirector;
+    }
+
+    public List<String> getCorreos() {
+        return correos;
+    }
+
+    public void setCorreos(List<String> correos) {
+        this.correos = correos;
+    }
+
+    public List<String> getDepartamentos() {
+        return departamentos;
+    }
+
+    public void setDepartamentos(List<String> departamentos) {
+        this.departamentos = departamentos;
     }
 }
