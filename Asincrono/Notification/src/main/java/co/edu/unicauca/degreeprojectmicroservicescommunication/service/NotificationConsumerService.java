@@ -1,6 +1,7 @@
 package co.edu.unicauca.degreeprojectmicroservicescommunication.service;
 
 import co.edu.unicauca.degreeprojectmicroservicescommunication.Entities.Departamento;
+import co.edu.unicauca.degreeprojectmicroservicescommunication.Entities.JefeDepto;
 import co.edu.unicauca.degreeprojectmicroservicescommunication.Repository.JefeDeptoRepository;
 import co.edu.unicauca.degreeprojectmicroservicescommunication.infra.communication.EmailMessage;
 import co.edu.unicauca.degreeprojectmicroservicescommunication.infra.dto.AnteproyectoRequest;
@@ -46,7 +47,7 @@ public class NotificationConsumerService {
      * </p>
      * @param anteproyectoRequest objeto {@link AnteproyectoRequest} recibido desde la cola de RabbitMQ, que contiene los datos del anteproyecto de grado.
      */
-    @RabbitListener(queues = "${app.rabbit.queue}")
+    @RabbitListener(queues = "${app.rabbit.queue}", autoStartup = "false")
     public void receiveMessage(AnteproyectoRequest anteproyectoRequest) {
         if (anteproyectoRequest == null) {
             System.out.println("El mensaje recibido es nulo");
@@ -103,7 +104,6 @@ public class NotificationConsumerService {
                         .ifPresent(jefe -> para.add(jefe.getEmail()));
             }
         }
-
 
         if (anteproyectoRequest.getCorreos() != null && !anteproyectoRequest.getCorreos().isEmpty()) {
             para.addAll(anteproyectoRequest.getCorreos());

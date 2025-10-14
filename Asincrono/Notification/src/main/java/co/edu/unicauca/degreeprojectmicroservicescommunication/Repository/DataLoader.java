@@ -2,8 +2,10 @@ package co.edu.unicauca.degreeprojectmicroservicescommunication.Repository;
 
 import co.edu.unicauca.degreeprojectmicroservicescommunication.Entities.Departamento;
 import co.edu.unicauca.degreeprojectmicroservicescommunication.Entities.JefeDepto;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.amqp.rabbit.listener.MessageListenerContainer;
+import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistry;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 /**
@@ -11,8 +13,13 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class DataLoader implements CommandLineRunner {
-    @Autowired
-    JefeDeptoRepository jefeDeptoRepository;
+    private final JefeDeptoRepository jefeDeptoRepository;
+    private final ApplicationContext context;
+
+    public DataLoader(JefeDeptoRepository jefeDeptoRepository, ApplicationContext context) {
+        this.jefeDeptoRepository = jefeDeptoRepository;
+        this.context = context;
+    }
 
     /**
      * Ejecuta la carga inicial de datos en el repositorio de jefes de departamento.
@@ -48,5 +55,8 @@ public class DataLoader implements CommandLineRunner {
         jefe4.setDepto(Departamento.TELECOMUNICACIONES);
         jefe4.setEmail("atoledo@unicauca.edu.co");
         jefeDeptoRepository.save(jefe4);
+
+        RabbitListenerEndpointRegistry registry = context.getBean(RabbitListenerEndpointRegistry.class);
+        registry.getListenerContainers().forEach(MessageListenerContainer::start);
     }
 }
