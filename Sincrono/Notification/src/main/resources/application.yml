@@ -2,11 +2,27 @@ server:
   port: 8080
 
 spring:
+  application:
+    name: notification
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
   rabbitmq:
     host: localhost
     port: 5672
-    username: user
-    password: pass
+    username: appuser
+    password: apppass
 
 app:
   rabbit:
@@ -14,4 +30,8 @@ app:
     queue: thesis.anteproyecto.queue
     routing-key: anteproyecto.created
 
-management.endpoints.web.exposure.include: health,info
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

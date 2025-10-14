@@ -1,17 +1,32 @@
 server:
-  port: 8080
+  port: 8081
 
 spring:
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: user
-    password: pass
+  application:
+    name: submission
+  datasource:
+    url: jdbc:h2:mem:submissiondb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.H2Dialect
+    properties:
+      hibernate.format_sql: true
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
 
-app:
-  rabbit:
-    exchange: thesis.exchange
-    queue: thesis.anteproyecto.queue
-    routing-key: anteproyecto.created
+# 🔹 URL del micro Notification
+notification:
+  base-url: http://localhost:8080
 
-management.endpoints.web.exposure.include: health,info
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
