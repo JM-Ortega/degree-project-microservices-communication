@@ -3,8 +3,12 @@ package co.edu.unicauca.degreeprojectmicroservicescommunication.Repository;
 import co.edu.unicauca.degreeprojectmicroservicescommunication.Entities.Departamento;
 import co.edu.unicauca.degreeprojectmicroservicescommunication.Entities.JefeDepto;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Repositorio para gestionar las operaciones CRUD de los jefes de departamento.
@@ -12,10 +16,11 @@ import java.util.Optional;
  */
 public interface JefeDeptoRepository extends JpaRepository<JefeDepto,Long> {
     /**
-     * Busca un jefe de departamento según el departamento especificado.
-     * @param depto el departamento del cual se desea obtener el jefe
-     * @return un {@link Optional} que contiene el {@link JefeDepto} si existe,
-     * o vacío si no se encuentra ningún jefe para ese departamento
+     * Busca todos los jefes de departamento cuyos departamentos se encuentran en el conjunto especificado.
+     * @param departamentos conjunto de departamentos para los cuales se desea obtener los jefes asociados
+     * @return una lista de {@link JefeDepto} que pertenecen a los departamentos indicados;
+     * la lista puede estar vacía si no se encuentra ningún jefe para los departamentos dados
      */
-    Optional<JefeDepto> findByDepto(Departamento depto);
+    @Query("SELECT j FROM JefeDepto j WHERE j.depto IN :departamentos")
+    List<JefeDepto> findByDeptos(@Param("departamentos") Set<Departamento> departamentos);
 }

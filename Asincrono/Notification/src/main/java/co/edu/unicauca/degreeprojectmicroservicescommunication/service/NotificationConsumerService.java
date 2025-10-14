@@ -99,9 +99,9 @@ public class NotificationConsumerService {
                 }
             }
 
-            for (Departamento depto : departamentosReconocidos) {
-                jefeDeptoRepository.findByDepto(depto)
-                        .ifPresent(jefe -> para.add(jefe.getEmail()));
+            if (!departamentosReconocidos.isEmpty()) {
+                List<JefeDepto> jefes = jefeDeptoRepository.findByDeptos(departamentosReconocidos);
+                jefes.forEach(jefe -> para.add(jefe.getEmail()));
             }
         }
 
