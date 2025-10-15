@@ -46,7 +46,7 @@ public class RabbitMQConfig {
     }
 
     /**
-     * Crea una cola durable (que persiste si RabbitMQ se reinicia).
+     * Crea una cola durable que persiste si RabbitMQ se reinicia.
      *
      * @return una instancia de {@link Queue} con el nombre especificado.
      */

@@ -6,7 +6,7 @@ spring:
     name: submission-service
 
   datasource:
-    url: jdbc:h2:mem:submissiondb        # Base de datos en memoria
+    url: jdbc:h2:mem:submissiondb
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -38,5 +38,5 @@ spring:
 app:
   rabbit:
     exchange: thesis.exchange
-    queue: thesis.anteproyecto.queue     # Nombre de la cola
+    queue: thesis.anteproyecto.queue
     routing-key: anteproyecto.createds
