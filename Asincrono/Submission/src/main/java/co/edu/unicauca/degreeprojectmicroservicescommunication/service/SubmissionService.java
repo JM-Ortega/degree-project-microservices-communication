@@ -75,6 +75,7 @@ public class SubmissionService {
      * </ul>
      */
     public Anteproyecto crearAnteproyecto(AnteproyectoRequest request) {
+        // 1. Construcción del anteproyecto
         Anteproyecto anteproyecto = new Anteproyecto();
         anteproyecto.setTitulo(request.getTitulo());
         anteproyecto.setDescripcion(request.getDescripcion());
@@ -82,6 +83,7 @@ public class SubmissionService {
 
         TrabajoDeGrado trabajo = new TrabajoDeGrado();
 
+        // 2. Mapear estudiantes
         List<Estudiante> estudiantes = request.getEstudiantes()
                 .stream()
                 .map(dto -> estudianteRepository.findByCorreo(dto.getCorreo())
@@ -101,6 +103,7 @@ public class SubmissionService {
 
         trabajo.setEstudiantes(estudiantes);
 
+        // 3. Director obligatorio
         Docente director = docenteRepository.findByCorreo(request.getDirector().getCorreo())
                 .orElseGet(() -> new Docente(
                         request.getDirector().getNombre(),
@@ -119,6 +122,7 @@ public class SubmissionService {
 
         trabajo.setDirector(director);
 
+        // 4. Codirector opcional
         Docente codirector = null;
         if (request.getCodirector() != null) {
             codirector = docenteRepository.findByCorreo(request.getCodirector().getCorreo())
@@ -139,11 +143,14 @@ public class SubmissionService {
             trabajo.setCodirector(codirector);
         }
 
+        // Asociaciones bidireccionales
         trabajo.setAnteproyecto(anteproyecto);
         anteproyecto.setTrabajoDeGrado(trabajo);
 
+        // Persistir anteproyecto
         Anteproyecto saved = anteproyectoRepository.save(anteproyecto);
 
+        // Crear el vector de correos (destinatarios)
         List<String> correos = new ArrayList<>();
         correos.addAll(saved.getTrabajoDeGrado().getEstudiantes()
                 .stream()
@@ -154,12 +161,14 @@ public class SubmissionService {
             correos.add(saved.getTrabajoDeGrado().getCodirector().getCorreo());
         }
 
+        // Crear el vector de departamentos
         List<String> departamentos = new ArrayList<>();
         departamentos.add(saved.getTrabajoDeGrado().getDirector().getDepartamento());
         if (saved.getTrabajoDeGrado().getCodirector() != null) {
             departamentos.add(saved.getTrabajoDeGrado().getCodirector().getDepartamento());
         }
 
+        // 5. Setear el mensaje a enviar
         AnteproyectoMessage message = new AnteproyectoMessage(
                 saved.getTitulo(),
                 saved.getDescripcion(),
@@ -177,8 +186,10 @@ public class SubmissionService {
                 departamentos
         );
 
+        // 6. Enviar el mensaje a la cola
         rabbitMQSender.sendAnteproyecto(message);
 
+        // 7. Retorna el anteproyecto
         return saved;
     }
 }
