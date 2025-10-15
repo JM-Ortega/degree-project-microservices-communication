@@ -19,7 +19,6 @@ public class Anteproyecto {
 
     @OneToOne(mappedBy = "anteproyecto", cascade = CascadeType.ALL)
     private TrabajoDeGrado trabajoDeGrado;
-    // Importa si usas el mismo enum que en Notification
     @Enumerated(EnumType.STRING)
     private Departamento departamento;
 

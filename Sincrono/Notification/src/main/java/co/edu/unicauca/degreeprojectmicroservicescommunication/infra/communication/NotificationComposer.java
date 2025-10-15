@@ -30,7 +30,6 @@ public class NotificationComposer {
 
         List<String> para = new ArrayList<>();
 
-        // Estudiantes
         if (req.getEstudiante1() != null && !req.getEstudiante1().isBlank()) {
             para.add(req.getEstudiante1());
         }
@@ -42,7 +41,6 @@ public class NotificationComposer {
             body.append("Autor(es): ").append(req.getEstudiante1()).append("\n");
         }
 
-        // Director y Codirector (opcionales)
         if (req.getDirector() != null && !req.getDirector().isBlank()) {
             para.add(req.getDirector());
         }
@@ -50,13 +48,11 @@ public class NotificationComposer {
             para.add(req.getCodirector());
         }
 
-        // Jefe de departamento (a partir del String del request)
         Departamento enumDepto = req.getDepartamento();
         if (enumDepto != null) {
             jefeDeptoRepository.findByDepto(enumDepto).ifPresent(jefe -> para.add(jefe.getEmail()));
         }
 
-        // IMPORTANTE: respetamos tu constructor: (asunto, body, de, para)
         return new EmailMessage(asunto, body.toString(), de, para);
     }
 
